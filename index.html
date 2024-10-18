@@ -1,574 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GiftSage AI - Your Personal Gift Advisor</title>
-
-    <!-- Tailwind CSS CDN -->
+    <title>GiftSage AI - Modern Gift Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6366F1',   // Indigo-500
-                        secondary: '#EC4899', // Pink-500
-                        accent: '#14B8A6',    // Teal-500
-                        dark: '#0F172A',      // Blue Gray-900
-                        light: '#F3F4F6',     // Gray-100
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    backgroundImage: {
-                        'hero-pattern': "url('https://source.unsplash.com/1600x900/?gift,shopping')",
-                    },
-                },
-            },
-        };
-    </script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- Favicon -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-
-    <!-- Custom Styles -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-        /* Custom scrollbar for modern look */
-        ::-webkit-scrollbar {
-            width: 8px;
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.5);
-            border-radius: 9999px;
+
+        .bg-gradient {
+            background: linear-gradient(130deg, #F0F4F8 0%, #D9E2EC 50%, #BCCCDC 100%);
         }
-        /* Animations */
+
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .hover-glass:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-15px) scale(1.1);
+            transition: all 0.6s ease;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .glow {
+            box-shadow: 0 0 80px rgba(139, 92, 246, 0.5);
+        }
+
+        .grid-pattern {
+            background-image: 
+                radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .title-gradient {
+            background: linear-gradient(130deg, #7C3AED, #EC4899);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
         .fade-in {
-            animation: fadeIn 1s ease-in-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
         }
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        /* Loading Screen Styles */
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            background-color: #0F172A; /* Same as bg-dark */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            flex-direction: column;
-        }
-        #loading-logo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-        }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top: 4px solid #6366F1;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .fade-in.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="bg-dark text-gray-100 font-sans antialiased overflow-x-hidden relative">
-
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <!-- Logo -->
-        <div id="loading-logo">
-            <!-- Replace with your actual logo -->
-            <svg class="w-24 h-24 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <!-- SVG Path -->
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-        </div>
-        <!-- Spinner -->
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-dark bg-opacity-80 backdrop-blur-lg">
+<body class="bg-gradient grid-pattern min-h-screen text-gray-800 overflow-x-hidden">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
                 <a href="#" class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                        <!-- SVG Icon -->
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <!-- SVG Path -->
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
                         </svg>
                     </div>
-                    <span class="text-2xl font-bold text-white">GiftSage</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">GiftSage</span>
                 </a>
-                <!-- Navigation Links -->
-                <div class="hidden lg:flex items-center space-x-8">
-                    <a href="#features" class="text-sm text-gray-300 hover:text-white transition-colors">Features</a>
-                    <a href="#how-it-works" class="text-sm text-gray-300 hover:text-white transition-colors">How It Works</a>
-                    <a href="#contact" class="text-sm text-gray-300 hover:text-white transition-colors">Contact</a>
-                    <button class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-full transition-all font-medium text-sm shadow-lg">Get Started</button>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-sm text-gray-700 hover:text-gray-900 transition-colors">Discover</a>
+                    <button class="px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-medium hover:opacity-90 transition-opacity text-white">Get Started</button>
                 </div>
-                <!-- Mobile Menu Button -->
-                <div class="lg:hidden">
-                    <button id="mobile-menu-button" class="text-gray-300 focus:outline-none">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <!-- SVG Path -->
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden">
-            <div class="px-6 pt-2 pb-4 space-y-1">
-                <a href="#features" class="block text-sm text-gray-300 hover:text-white transition-colors">Features</a>
-                <a href="#how-it-works" class="block text-sm text-gray-300 hover:text-white transition-colors">How It Works</a>
-                <a href="#contact" class="block text-sm text-gray-300 hover:text-white transition-colors">Contact</a>
-                <button class="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-full transition-all font-medium text-sm shadow-lg">Get Started</button>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="relative flex items-center justify-center h-screen mb-12 overflow-hidden bg-hero-pattern bg-cover bg-center">
-        <div class="absolute inset-0 bg-gradient-to-b from-dark via-transparent to-dark opacity-90"></div>
-        <div class="relative z-10 p-5 text-center">
-            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight fade-in">
-                Discover the Perfect Gift with <br><span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI-Powered Suggestions</span>
-            </h1>
-            <p class="mt-6 text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto fade-in">
-                Let GiftSage's AI understand your loved ones to find gifts that truly resonate with them.
-            </p>
-            <button class="mt-8 bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-8 py-4 rounded-full transition-all font-medium text-lg shadow-lg fade-in">Get Started</button>
-        </div>
-    </header>
+    <main class="relative pt-32 pb-20 px-6">
+        <!-- Decorative Elements -->
+        <div class="absolute top-40 left-0 w-72 h-72 bg-violet-400/30 rounded-full filter blur-3xl floating"></div>
+        <div class="absolute top-60 right-0 w-96 h-96 bg-fuchsia-400/20 rounded-full filter blur-3xl floating"></div>
 
-    <!-- Main Content -->
-    <main class="px-6">
-        <!-- Search Section -->
-        <section class="max-w-4xl mx-auto bg-gray-800 bg-opacity-80 backdrop-blur-md rounded-3xl p-10 shadow-2xl -mt-40 relative z-20">
-            <!-- Search Input -->
-            <div class="relative">
-                <input
-                    id="gift-input"
-                    type="text"
-                    placeholder="Describe who you're shopping for..."
-                    class="w-full pl-14 pr-40 py-5 bg-gray-700 bg-opacity-70 rounded-full focus:ring-4 focus:ring-primary focus:outline-none text-gray-200 placeholder-gray-400 shadow-md text-lg"
-                />
-                <svg class="w-6 h-6 text-gray-400 absolute left-5 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <!-- SVG Path -->
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <button
-                    id="find-gift-btn"
-                    class="absolute right-5 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-8 py-3 rounded-full transition-all font-medium text-lg shadow-lg"
-                >
-                    Find Gifts
-                </button>
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 fade-in">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight title-gradient">
+                    Find the Perfect Gift with
+                    <span class="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent"> AI Magic</span>
+                </h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Let our AI understand your loved ones and discover thoughtfully curated gifts that'll make their day special.
+                </p>
             </div>
-            <!-- Price Range Selector -->
-            <div class="mt-8">
-                <label for="price-range" class="block text-gray-300 mb-2 font-medium">Select Price Range:</label>
-                <select id="price-range" class="w-full bg-gray-700 bg-opacity-70 rounded-full px-5 py-3 focus:ring-4 focus:ring-primary focus:outline-none text-gray-200 shadow-md">
-                    <option value="any">Any Price</option>
-                    <option value="under50">Under $50</option>
-                    <option value="50to150">$50 - $150</option>
-                    <option value="150to300">$150 - $300</option>
-                    <option value="over300">$300+</option>
-                </select>
-            </div>
-            <!-- Suggested Tags -->
-            <div class="mt-6 flex flex-wrap gap-3 justify-center">
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Creative friend')">🎨 Creative friend</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Tech enthusiast')">👨‍💻 Tech enthusiast</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Nature lover')">🌿 Nature lover</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Fitness buff')">🏋️ Fitness buff</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Foodie')">🍳 Foodie</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Bookworm')">📚 Bookworm</button>
-                <button class="px-4 py-2 rounded-full bg-gray-600 hover:bg-primary hover:text-white text-sm text-gray-200 transition" onclick="selectTag('Music lover')">🎶 Music lover</button>
-            </div>
-        </section>
 
-        <!-- Chat UI Modal -->
-        <div id="chat-modal" class="fixed inset-0 hidden z-50 overflow-hidden">
-            <div class="flex items-center justify-center min-h-screen px-4">
-                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-xl transform transition-all w-full h-full">
-                    <div class="flex flex-col h-full">
-                        <!-- Header -->
-                        <div class="bg-gray-800 px-6 py-4 flex items-center justify-between">
-                            <h3 class="text-xl leading-6 font-medium text-white">GiftSage Assistant</h3>
-                            <button id="close-chat" class="text-gray-400 hover:text-white">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <!-- Chat Content -->
-                        <div id="chat-content" class="px-6 py-4 flex-1 overflow-y-auto bg-gray-800">
-                            <!-- Chat messages will be appended here -->
-                        </div>
-                        <!-- Input Area -->
-                        <div class="bg-gray-800 px-6 py-4">
-                            <div class="flex items-center">
-                                <input id="chat-input" type="text" placeholder="Type your message..." class="flex-1 bg-gray-700 rounded-full px-4 py-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
-                                <button id="send-btn" class="ml-4 bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-full transition">
-                                    Send
-                                </button>
-                            </div>
-                        </div>
+            <!-- Gift Finder -->
+            <div class="max-w-3xl mx-auto glass rounded-2xl p-8 glow fade-in">
+                <!-- Price Range Selector -->
+                <div class="flex items-center justify-between mb-8">
+                    <button class="glass hover-glass rounded-xl px-6 py-3 text-sm transition-all duration-500 text-gray-800" data-price="under-50">Under $50</button>
+                    <button class="glass hover-glass rounded-xl px-6 py-3 text-sm transition-all duration-500 text-gray-800" data-price="50-150">$50 - $150</button>
+                    <button class="glass hover-glass rounded-xl px-6 py-3 text-sm transition-all duration-500 text-gray-800" data-price="150-300">$150 - $300</button>
+                    <button class="glass hover-glass rounded-xl px-6 py-3 text-sm transition-all duration-500 text-gray-800" data-price="300+">$300+</button>
+                </div>
+
+                <!-- Main Input -->
+                <div class="relative fade-in">
+                    <div class="absolute left-5 top-4">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
                     </div>
+                    <input 
+                        type="text" 
+                        id="gift-description"
+                        placeholder="Describe who you're shopping for..." 
+                        class="w-full pl-14 pr-36 py-4 bg-white rounded-xl border border-gray-300 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all outline-none text-gray-800"
+                    />
+                    <button id="find-gift-btn" class="absolute right-2 top-2 px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity text-white">
+                        Find Gifts
+                    </button>
                 </div>
-                <!-- Loading Overlay -->
-                <div id="loading-overlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-                    <div class="spinner"></div>
+
+                <!-- Example Tags -->
+                <div class="mt-6 flex flex-wrap gap-2 fade-in">
+                    <span class="px-4 py-2 rounded-lg glass text-sm text-gray-800 hover-glass transition-all duration-500">🎨 Creative friend</span>
+                    <span class="px-4 py-2 rounded-lg glass text-sm text-gray-800 hover-glass transition-all duration-500">👨‍💻 Tech enthusiast</span>
+                    <span class="px-4 py-2 rounded-lg glass text-sm text-gray-800 hover-glass transition-all duration-500">🌿 Nature lover</span>
                 </div>
+            </div>
+
+            <!-- Gift Suggestions Section -->
+            <div id="gift-suggestions" class="mt-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
+                <!-- Gift cards will be dynamically inserted here -->
             </div>
         </div>
-
-        <!-- Features Section -->
-        <section id="features" class="py-20">
-            <div class="max-w-7xl mx-auto">
-                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-100">Why Choose GiftSage?</h2>
-                <div class="grid md:grid-cols-3 gap-12">
-                    <!-- Feature Card -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-primary bg-opacity-20 flex items-center justify-center mb-6">
-                            <!-- SVG Icon -->
-                            <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Path -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3v4h6v-4c0-1.657-1.343-3-3-3z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 16h12"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Personalized Suggestions</h3>
-                        <p class="text-gray-400">Our AI analyzes preferences to provide unique gift ideas tailored to your recipient.</p>
-                    </div>
-
-                    <!-- Feature Card -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-secondary bg-opacity-20 flex items-center justify-center mb-6">
-                            <!-- SVG Icon -->
-                            <svg class="w-10 h-10 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Path -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4m0 12v4m-2-2h4m5-16l3 7h7l-5.5 4 2 7-6-4-6 4 2-7L2 10h7z"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Budget-Friendly Options</h3>
-                        <p class="text-gray-400">Set your budget, and we'll find the best gifts within your price range.</p>
-                    </div>
-
-                    <!-- Feature Card -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-accent bg-opacity-20 flex items-center justify-center mb-6">
-                            <!-- SVG Icon -->
-                            <svg class="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Path -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12l8-5H4l8 5z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12l8 5H4l8-5z"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Global Selection</h3>
-                        <p class="text-gray-400">Access a wide range of products from all over the world.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="py-20 bg-gray-800 bg-opacity-50 rounded-3xl shadow-2xl">
-            <div class="max-w-7xl mx-auto">
-                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-100">How It Works</h2>
-                <div class="grid md:grid-cols-3 gap-12">
-                    <!-- Step 1 -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-primary bg-opacity-20 flex items-center justify-center mb-6">
-                            <span class="text-3xl font-bold text-primary">1</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Describe the Recipient</h3>
-                        <p class="text-gray-400">Tell us about who you're shopping for, including their interests and personality.</p>
-                    </div>
-                    <!-- Step 2 -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-secondary bg-opacity-20 flex items-center justify-center mb-6">
-                            <span class="text-3xl font-bold text-secondary">2</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Set Your Budget</h3>
-                        <p class="text-gray-400">Choose a price range that suits your budget.</p>
-                    </div>
-                    <!-- Step 3 -->
-                    <div class="text-center">
-                        <div class="w-20 h-20 mx-auto rounded-full bg-accent bg-opacity-20 flex items-center justify-center mb-6">
-                            <span class="text-3xl font-bold text-accent">3</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-3 text-gray-100">Get Personalized Suggestions</h3>
-                        <p class="text-gray-400">Our AI will provide a curated list of gift ideas they'll love.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Call to Action -->
-        <section class="py-20">
-            <div class="max-w-7xl mx-auto bg-gradient-to-r from-primary to-secondary rounded-3xl p-16 text-center shadow-2xl">
-                <h2 class="text-3xl md:text-4xl font-bold mb-6 text-gray-100">Ready to Find the Perfect Gift?</h2>
-                <p class="text-lg md:text-xl text-gray-200 mb-8">Join thousands of happy users who have discovered amazing gifts with GiftSage.</p>
-                <button class="bg-white text-primary hover:text-white hover:bg-primary px-10 py-4 rounded-full transition-all font-medium text-lg shadow-lg">Get Started Today</button>
-            </div>
-        </section>
     </main>
 
     <!-- Footer -->
-    <footer id="contact" class="bg-dark py-10">
-        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+    <footer class="bg-gray-100 mt-20 py-12">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
             <!-- Company Info -->
             <div>
                 <a href="#" class="flex items-center space-x-3 mb-4">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                        <!-- SVG Icon -->
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <!-- SVG Path -->
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
                         </svg>
                     </div>
-                    <span class="text-2xl font-bold text-white">GiftSage</span>
+                    <span class="text-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">GiftSage</span>
                 </a>
-                <p class="text-gray-400">Making gift-giving effortless with AI-powered suggestions.</p>
+                <p class="text-gray-600">Making gift-giving effortless with AI-powered suggestions.</p>
             </div>
-            <!-- Links -->
+            <!-- Quick Links -->
             <div>
-                <h3 class="text-lg font-semibold text-white mb-4">Company</h3>
-                <ul class="space-y-2">
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Careers</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">Quick Links</h3>
+                <ul class="space-y-3">
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800 transition-colors">About</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800 transition-colors">Features</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-gray-800 transition-colors">Contact</a></li>
                 </ul>
             </div>
-            <!-- Support -->
+            <!-- Stay Updated -->
             <div>
-                <h3 class="text-lg font-semibold text-white mb-4">Support</h3>
-                <ul class="space-y-2">
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Help Center</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">FAQs</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
-                </ul>
-            </div>
-            <!-- Subscribe -->
-            <div>
-                <h3 class="text-lg font-semibold text-white mb-4">Stay Updated</h3>
-                <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest updates.</p>
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">Stay Updated</h3>
+                <p class="text-gray-600 mb-4">Subscribe to our newsletter for the latest updates and offers.</p>
                 <form>
-                    <input type="email" placeholder="Your Email" class="w-full bg-gray-800 bg-opacity-50 rounded-full px-4 py-2 mb-4 text-gray-300 focus:ring-4 focus:ring-primary focus:outline-none">
-                    <button class="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-full transition-all font-medium">Subscribe</button>
+                    <input type="email" placeholder="Your Email" class="w-full bg-white rounded-full px-4 py-2 mb-4 border border-gray-300 focus:ring-2 focus:ring-violet-500 outline-none text-gray-800" />
+                    <button class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-6 py-3 rounded-full font-medium hover:opacity-90 transition-opacity">Subscribe</button>
                 </form>
             </div>
         </div>
-        <div class="mt-10 text-center text-gray-400">
-            &copy; 2023 GiftSage. All rights reserved.
-        </div>
+        <div class="mt-10 text-center text-gray-600">&copy; 2024 GiftSage. All rights reserved.</div>
     </footer>
-
-    <!-- Scripts -->
     <script>
-        // Hide Loading Screen on Page Load
-        window.addEventListener('load', () => {
-            const loadingScreen = document.getElementById('loading-screen');
-            loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.5s ease-in-out';
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500);
-        });
-
-        // Mobile Menu Toggle
-        const menuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        menuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // Gift Suggester Logic
-        window.giftSuggester = {
-            findGifts: function() {
-                const input = document.getElementById('gift-input').value;
-                const priceRange = document.getElementById('price-range').value;
-                if (input.trim() === '') {
-                    alert('Please describe who you are shopping for.');
-                    return;
-                }
-                // Open the chat modal
-                document.getElementById('chat-modal').classList.remove('hidden');
-                // Start the chat conversation
-                startChatConversation(input, priceRange);
-            }
-        };
-
-        document.getElementById('find-gift-btn').addEventListener('click', window.giftSuggester.findGifts);
-
-        // Close Chat Modal
-        document.getElementById('close-chat').addEventListener('click', () => {
-            document.getElementById('chat-modal').classList.add('hidden');
-        });
-
-        // Function to handle tag selection
-        function selectTag(tag) {
-            document.getElementById('gift-input').value = tag;
-        }
-
-        // Chat Conversation Logic with Local Storage
-        let conversation = [];
-
-        function loadConversation() {
-            const savedConversation = localStorage.getItem('giftSageConversation');
-            if (savedConversation) {
-                conversation = JSON.parse(savedConversation);
-                conversation.forEach(msg => {
-                    if (msg.role === 'user') {
-                        appendUserMessage(msg.content);
-                    } else {
-                        appendBotMessage(msg.content);
+        gsap.registerPlugin(ScrollTrigger);
+    
+        // Animation setup for elements with 'fade-in' class
+        document.addEventListener('DOMContentLoaded', () => {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => {
+                gsap.fromTo(el, { opacity: 0, y: 50 }, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.5,
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
                     }
                 });
-            }
-        }
-
-        function saveConversation() {
-            localStorage.setItem('giftSageConversation', JSON.stringify(conversation));
-        }
-
-        function startChatConversation(userInput, priceRange) {
-            const chatContent = document.getElementById('chat-content');
-            chatContent.innerHTML = ''; // Clear previous chat
-            conversation = []; // Reset conversation
-            const initialMessage = `I'm looking for a gift for ${userInput} within ${priceRange} price range.`;
-            conversation.push({ role: 'user', content: initialMessage });
-            appendUserMessage(initialMessage);
-            saveConversation();
-            sendMessageToAPI();
-        }
-
-        function sendMessage() {
-            const chatInput = document.getElementById('chat-input');
-            const message = chatInput.value.trim();
-            if (message === '') return;
-            conversation.push({ role: 'user', content: message });
-            appendUserMessage(message);
-            chatInput.value = '';
-            saveConversation();
-            sendMessageToAPI();
-        }
-
-        function sendMessageToAPI() {
-            showLoading();
-            // Call your backend API to get the AI response
-            fetch('/api/get-gift-suggestions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': 'Bearer YOUR_API_KEY', // Do not expose API keys in client-side code
-                },
-                body: JSON.stringify({
-                    conversation: conversation, // Send the entire conversation
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                conversation.push({ role: 'assistant', content: data.response });
-                appendBotMessage(data.response);
-                saveConversation();
-                hideLoading();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                appendBotMessage('Sorry, something went wrong. Please try again later.');
-                hideLoading();
             });
-        }
-
-        function appendUserMessage(message) {
-            const chatContent = document.getElementById('chat-content');
-            const messageElement = document.createElement('div');
-            messageElement.className = 'flex justify-end mb-4';
-            messageElement.innerHTML = `
-                <div class="bg-primary text-white p-4 rounded-l-2xl rounded-br-2xl max-w-lg">
-                    ${message}
-                </div>
-            `;
-            chatContent.appendChild(messageElement);
-            chatContent.scrollTop = chatContent.scrollHeight;
-        }
-
-        function appendBotMessage(message) {
-            const chatContent = document.getElementById('chat-content');
-            const messageElement = document.createElement('div');
-            messageElement.className = 'flex justify-start mb-4';
-            messageElement.innerHTML = `
-                <div class="bg-gray-700 text-gray-200 p-4 rounded-r-2xl rounded-bl-2xl max-w-lg">
-                    ${message}
-                </div>
-            `;
-            chatContent.appendChild(messageElement);
-            chatContent.scrollTop = chatContent.scrollHeight;
-        }
-
-        // Loading Indicator Functions
-        function showLoading() {
-            document.getElementById('loading-overlay').classList.remove('hidden');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading-overlay').classList.add('hidden');
-        }
-
-        // Event Listeners for Chat
-        document.getElementById('send-btn').addEventListener('click', sendMessage);
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
         });
-
-        // Load previous conversation when ChatUI opens
-        document.getElementById('chat-modal').addEventListener('transitionend', function() {
-            if (!this.classList.contains('hidden')) {
-                loadConversation();
+    
+        // Event listener for "Find Gifts" button
+        document.getElementById('find-gift-btn').addEventListener('click', async () => {
+            const description = document.getElementById('gift-description').value.trim();
+            if (!description) {
+                alert('Please enter a description to find the perfect gift.');
+                return;
             }
-        });
-
-        // Smooth Scroll for Anchor Links
-        const links = document.querySelectorAll('a[href^="#"]');
-        for (const link of links) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
+    
+            try {
+                // Fetching gift suggestions from the API
+                const response = await fetch('/api/gift-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ description }),
+                });
+    
+                const data = await response.json();
+    
+                // Handling the response from the API
+                const giftSuggestionsContainer = document.getElementById('gift-suggestions');
+                giftSuggestionsContainer.innerHTML = ''; // Clear previous results
+    
+                if (!response.ok || !data.suggestions || data.suggestions.length === 0) {
+                    giftSuggestionsContainer.innerHTML = '<p class="text-center text-gray-700">No gifts found matching the description. Please try again.</p>';
+                    return;
                 }
-            });
-        }
+    
+                // Displaying the gift suggestions
+                data.suggestions.forEach(suggestion => {
+                    const giftCard = document.createElement('div');
+                    giftCard.className = 'glass p-6 rounded-xl hover-glass transition-all duration-500';
+                    giftCard.innerHTML = `
+                        <h3 class="text-xl font-bold mb-2">${suggestion.name}</h3>
+                        <p class="text-gray-600 mb-4">${suggestion.description}</p>
+                        <span class="bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm">${suggestion.price}</span>
+                        <a href="${suggestion.link}" target="_blank" class="block mt-4 text-sm text-violet-600 underline hover:text-violet-800 transition-colors">Buy Now</a>
+                    `;
+                    giftSuggestionsContainer.appendChild(giftCard);
+                });
+                
+                giftSuggestionsContainer.classList.remove('hidden');
+    
+            } catch (error) {
+                console.error('Error fetching gift suggestions:', error);
+                alert('An error occurred while fetching gift suggestions. Please try again.');
+            }
+        });
     </script>
+    
 </body>
 </html>
